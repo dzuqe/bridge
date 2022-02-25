@@ -8,14 +8,14 @@ contract Reserve
         string transferId;
         uint256 amount;
         bool withdrew;
-    };
+    }
 
     mapping(address => Transfer[]) public deposits;
     address public owner;
     
     modifier auth()
     {
-        require(msg,sender == owner, "Reserve/Only Moderator can run this command");
+        require(msg.sender == owner, "Reserve/Only Moderator can run this command");
         _;
     }
 
@@ -28,7 +28,7 @@ contract Reserve
     /// @returns
     function deposit() external payable returns (uint)
     {
-        deposits[msg.sender].add({amount: msg.value, withdrew: false});
+        deposits[msg.sender].append({amount: msg.value, withdrew: false});
         return deposits[msg.sender].length() - 1;
     }
 
@@ -40,15 +40,7 @@ contract Reserve
         deposits[msg.sender][transferId].amount = 0;
         deposits[msg.sender][transferId].withdrew = true;
 
-        try
-        {
-            address(this).transfer(msg.sender, amount);
-        }
-        catch(error)
-        {
-            deposits[msg.sender][transferId] = amount;
-            revert;
-        }
+        address(this).transfer(msg.sender, amount);
     }
 }
 
