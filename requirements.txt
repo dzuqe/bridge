@@ -1,4 +1,4 @@
 web3
-algosdk
+py-algorand-sdk
 pyteal
 flask
