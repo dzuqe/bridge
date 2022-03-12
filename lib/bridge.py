@@ -1,10 +1,20 @@
 from web3 import Web3
+from Algorand import Algorand
+from Ethereum import Ethereum
+from db import Db
 import algosdk
 
 class Bridge:
     def __init__(self):
-        self.web3 = Web3.HttpProvider('http://localhost:8777')
-        self.client = algo.Client()
+        self.eth = Ethereum(
+            os.environ['ETH_ADDR'],
+            os.environ['ETH_KEY']
+        )
+
+        self.algo = Algorand(
+            os.environ['PURESTAKE_API_KEY']
+        )
+
         self.reserve = Reserve()
         self.db = Db()
 
@@ -53,7 +63,6 @@ class Bridge:
             self.status = 'SUCCESS'
             self.db.update()
 
-
     def withdraw_matic(self, id):
         self.db.start_with_id(id)
 
@@ -77,3 +86,52 @@ class Bridge:
 
         self.db.status = 'WITHDREW'
         self.db.update()
+
+
+contract_abi = open("./build/SwearJar.abi", "r").read()
+token_abi = open("/home/hydrogen/polygon/scarg-token/build/ScarredEntertainment.abi", "r").read()
+
+jar_address = web3.toChecksumAddress("0xbbde180847bf3b9f87c8fbfaac301390f5205928")
+token_address = web3.toChecksumAddress("0xb11c1cfcee8d5879fcc1c191719b9371b195bd38")
+
+jar = eth.contract(address=jar_address, abi=contract_abi)
+token = eth.contract(address=web3.toChecksumAddress(token_address), abi=token_abi)
+
+tx_info = {
+    'gas': 1000000,
+    'gasPrice': web3.toWei(1, 'gwei'),
+    'chainId': eth.chainId,
+    'from': '',
+    'nonce': '',
+}
+
+# utils
+def sos(tx, _key):
+   signed = eth.account.signTransaction(tx, private_key=_key)
+   result = eth.sendRawTransaction(signed.rawTransaction)
+   print(result.hex())
+
+
+print("approve me")
+tx_info.update({'nonce': eth.getTransactionCount(me)})
+tx_info.update({'from': me})
+amount = web3.toWei(10000000, 'ether')
+me_approve_tx = token.functions.approve(jar_address, amount).buildTransaction(tx_info)
+sos(me_approve_tx, key)
+
+print("approve for everyone else")
+for id in range(1, len(users)):
+    tx_info.update({'nonce': eth.getTransactionCount(users[id])})
+    tx_info.update({'from': users[id]})
+    amount = web3.toWei(1000000, 'ether')
+    approve_tx = token.functions.approve(jar_address, amount).buildTransaction(tx_info)
+    sos(approve_tx, keys[id])
+
+print("send users erc20")
+for id in range(1, len(users)):
+   tx_info.update({'nonce': eth.getTransactionCount(me)})
+   tx_info.update({'from': me})
+   transfer_tx = token.functions.transfer(users[id], web3.toWei(300000, 'ether')).buildTransaction(tx_info)
+   sos(transfer_tx, key)
+
+ 
