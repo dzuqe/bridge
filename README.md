@@ -1,9 +1,11 @@
 # Algorand and Polygon Bridge
 
-Convert $ALGO to $MATIC or vice versa
+Convert $ALGO to $MATIC or vice versa. 
 
-# Algorand Bridge Contract
+## Specs
+![design](doc/bridge.png)
 
-
-# Matic Bridge Contract
-
+## Other
+[contracts](doc/contracts.md)
+[lib](doc/lib.md)
+[scripts](doc/scripts.md)
